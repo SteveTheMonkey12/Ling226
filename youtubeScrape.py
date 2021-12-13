@@ -2,33 +2,36 @@ from youtube_transcript_api import YouTubeTranscriptApi as YTA
 from youtube_transcript_api.formatters import JSONFormatter
 import pafy
 import threading
-def thread_function(video_id, video_num, num_videos):
+import time
+def thread_function(video_id, video_num, num_videos, formatter):
     try:
-            transcript = YTA.get_transcript(video_id)
-            # .format_transcript(transcript) turns the transcript into a JSON string.
-            json_formatted = formatter.format_transcript(transcript)
-        except:
-            print("no transcript for " + pafy.new(video_id).title)
-            with open("noTranscipt.txt", 'a') as f:
-                f.write(video_id + " " + pafy.new(video_id).title)
+        transcript = YTA.get_transcript(video_id)
+        # .format_transcript(transcript) turns the transcript into a JSON string.
+        json_formatted = formatter.format_transcript(transcript)
+    except:
+        print("no transcript for " + pafy.new(video_id).title)
+        with open("noTranscipt.txt", 'a') as f:
+            f.write(str(video_id + " " + pafy.new(video_id).title))
+        return
 
-        #sanatize inputs
-        title=""
-        for c in pafy.new(video_id).title:
-            if c.isalnum() or c == " ":
-                title += c
+    #sanatize inputs
+    title=""
+    for c in pafy.new(video_id).title:
+        if c.isalnum() or c == " ":
+            title += c
 
 
-        # Now we can write it out to a file.
-        try:
-            with open("./output/" + title +".json", 'w', encoding='utf-8') as json_file:
-                json_file.write(json_formatted)
+    # Now we can write it out to a file.
+    try:
+        with open("./output/" + title +".json", 'w', encoding='utf-8') as json_file:
+            json_file.write(json_formatted)
 
-            print(f'{(video_num/num_videos)*100:.2f}% {title} {video_id}')
-        except:
-            print("file name invalid" + title)
-            with open("fileWriteError.txt", 'a') as f:
-                f.write(video_id + " " + title)
+        print(f'{(video_num/num_videos)*100:.2f}% {title} {video_id}')
+    except:
+        print("file name invalid " + title)
+        with open("fileWriteError.txt", 'a') as f:
+            f.write(video_id + " " + title)
+        return
 
 def main():
     #url  = "https://www.youtube.com/watch?v=GFKHOiufjkI&list=UUxyCzPY2pjAjrxoSYclpuLg"
@@ -40,8 +43,10 @@ def main():
     formatter = JSONFormatter()
     threads = list()
     for video_id in video_ids:
+        if video_num % 100 == 0:
+            time.sleep(2)
         video_num+=1
-        x = threading.Thread(target=thread_function, args=(video_id, video_num, num_videos,))
+        x = threading.Thread(target=thread_function, args=(video_id, video_num, num_videos, formatter,))
         threads.append(x)
         x.start()
     for index, thread in enumerate(threads):
