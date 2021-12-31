@@ -31,15 +31,15 @@ def main():
         hasSorted = False
         for word in words:
             if word in male_names and word in female_names:
-                moveFile(filepath, "unknown/"+f)
+                moveFile(filepath, "unknown/"+word+" "+f)
                 hasSorted = True
                 break
             elif word in male_names:
-                moveFile(filepath, "male/"+f)
+                moveFile(filepath, "male/"+word +" "+f)
                 hasSorted = True
                 break
             elif word in female_names:
-                moveFile(filepath, "female/"+f)
+                moveFile(filepath, "female/"+word+" "+f)
                 hasSorted = True
                 break
         if not hasSorted:
